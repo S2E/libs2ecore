@@ -127,7 +127,18 @@ struct PluginInfo {
     std::string configKey;
 
     /** A function to create a plugin instance */
-    Plugin *(*instanceCreator)(S2E *);
+    typedef Plugin *(*InstanceCreator)(S2E *);
+    InstanceCreator instanceCreator;
+
+    PluginInfo(const std::string &n, const std::string &desc, const std::string &funcName,
+               const std::vector<std::string> &deps, const std::string &cfgKey, const InstanceCreator instCreator)
+        : name(n), description(desc), functionName(funcName), dependencies(deps), configKey(cfgKey),
+          instanceCreator(instCreator) {
+    }
+
+    PluginInfo(const std::string &n, const std::string &desc, const std::vector<std::string> &deps)
+        : PluginInfo(n, desc, "", deps, n, nullptr) {
+    }
 };
 
 // typedef std::tr1::unordered_map<std::string, const PluginInfo*> PluginMap;
@@ -192,14 +203,14 @@ private:
 
 /** Defines an S2E plugin. Should be put in a cpp file.
     NOTE: use S2E_NOOP from Utils.h to pass multiple dependencies */
-#define S2E_DEFINE_PLUGIN(className, description, functionName, ...)                                        \
-    const char className::s_pluginDeps[][64] = {__VA_ARGS__};                                               \
-    const PluginInfo className::s_pluginInfo = {                                                            \
-        #className, description, functionName,                                                              \
-        std::vector<std::string>(className::s_pluginDeps,                                                   \
-                                 className::s_pluginDeps +                                                  \
-                                     sizeof(className::s_pluginDeps) / sizeof(className::s_pluginDeps[0])), \
-        "pluginsConfig['" #className "']", _pluginCreatorHelper<className>};                                \
+#define S2E_DEFINE_PLUGIN(className, description, functionName, ...)                                                   \
+    const char className::s_pluginDeps[][64] = {__VA_ARGS__};                                                          \
+    const PluginInfo className::s_pluginInfo =                                                                         \
+        PluginInfo(#className, description, functionName,                                                              \
+                   std::vector<std::string>(className::s_pluginDeps,                                                   \
+                                            className::s_pluginDeps +                                                  \
+                                                sizeof(className::s_pluginDeps) / sizeof(className::s_pluginDeps[0])), \
+                   "pluginsConfig['" #className "']", _pluginCreatorHelper<className>);                                \
     static CompiledPlugin s_##className(className::getPluginInfoStatic())
 
 template <class C> Plugin *_pluginCreatorHelper(S2E *s2e) {
