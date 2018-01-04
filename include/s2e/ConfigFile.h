@@ -22,35 +22,35 @@ class S2EExecutionState;
 
 class ConfigFile {
 private:
-    /* Don't print warning messages */
+    /// Don't print warning messages
     bool m_silent;
 
     lua_State *m_luaState;
 
-    /* Called on errors during initial loading. Will terminate the program */
-    void luaError(const char *fmt, ...);
+    /// Called on errors during initial loading. Will terminate the program
+    void luaError(const char *fmt, ...) const;
 
-    /* Called on errors that can be ignored */
-    void luaWarning(const char *fmt, ...);
+    /// Called on errors that can be ignored
+    void luaWarning(const char *fmt, ...) const;
 
-    /* Fake data type for list size */
+    // Fake data type for list size
     struct _list_size {
         int size;
     };
 
-    /* Fake data type for table key list */
+    // Fake data type for table key list
     struct _key_list {
         std::vector<std::string> keys;
     };
 
-    /* Helper to get C++ type name */
-    template <typename T> const char *getTypeName();
+    /// Helper to get C++ type name
+    template <typename T> const char *getTypeName() const;
 
-    /* Helper to get topmost value of lua stack as a C++ value */
-    template <typename T> bool getLuaValue(T *res, const T &def, int index = -1);
+    /// Helper to get topmost value of lua stack as a C++ value
+    template <typename T> bool getLuaValue(T *res, const T &def, int index = -1) const;
 
-    /* Universal implementation for getXXX functions */
-    template <typename T> T getValueT(const std::string &expr, const T &def, bool *ok);
+    /// Universal implementation for getXXX functions
+    template <typename T> T getValueT(const std::string &expr, const T &def, bool *ok) const;
 
 public:
     ConfigFile(const std::string &configFileName);
@@ -68,31 +68,35 @@ public:
          def   default value to return on error
          ok    if non-null then will be false on error
     */
-    bool getBool(const std::string &name, bool def = false, bool *ok = NULL);
-    int64_t getInt(const std::string &name, int64_t def = 0, bool *ok = NULL);
-    double getDouble(const std::string &name, double def = 0, bool *ok = NULL);
-    std::string getString(const std::string &name, const std::string &def = std::string(), bool *ok = NULL);
+    bool getBool(const std::string &name, bool def = false, bool *ok = nullptr) const;
+    int64_t getInt(const std::string &name, int64_t def = 0, bool *ok = nullptr) const;
+    double getDouble(const std::string &name, double def = 0, bool *ok = nullptr) const;
+    std::string getString(const std::string &name, const std::string &def = std::string(), bool *ok = nullptr) const;
 
     typedef std::vector<std::string> string_list;
-    string_list getStringList(const std::string &name, const string_list &def = string_list(), bool *ok = NULL);
+    string_list getStringList(const std::string &name, const string_list &def = string_list(),
+                              bool *ok = nullptr) const;
 
     typedef std::vector<uint64_t> integer_list;
-    integer_list getIntegerList(const std::string &name, const integer_list &def = integer_list(), bool *ok = NULL);
+    integer_list getIntegerList(const std::string &name, const integer_list &def = integer_list(),
+                                bool *ok = nullptr) const;
 
-    /* Return all string keys for a given table.
-       Fails if some keys are not strings. */
-    string_list getListKeys(const std::string &name, bool *ok = NULL);
+    ///
+    /// \brief Return all string keys for a given table.
+    ///
+    /// Fails if some keys are not strings.
+    ///
+    string_list getListKeys(const std::string &name, bool *ok = nullptr) const;
 
-    /* Return the size of the list. Works for all types of
-       lua lists just like '#' operator in lua. */
-    int getListSize(const std::string &name, bool *ok = NULL);
+    /// Return the size of the list. Works for all types of lua lists just like the '#' operator in lua
+    int getListSize(const std::string &name, bool *ok = nullptr) const;
 
     bool setBool(const std::string &name, bool value);
 
-    /* Returns true if a config key exists */
-    bool hasKey(const std::string &name);
+    /// Returns true if a config key exists
+    bool hasKey(const std::string &name) const;
 
-    void invokeLuaCommand(const char *cmd);
+    void invokeLuaCommand(const char *cmd) const;
 
     lua_State *getState() const {
         return m_luaState;

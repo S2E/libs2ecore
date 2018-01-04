@@ -71,63 +71,63 @@ ConfigFile::~ConfigFile() {
     lua_close(m_luaState);
 }
 
-template <> inline const char *ConfigFile::getTypeName<bool>() {
+template <> inline const char *ConfigFile::getTypeName<bool>() const {
     return "boolean";
 }
 
-template <> inline const char *ConfigFile::getTypeName<int64_t>() {
+template <> inline const char *ConfigFile::getTypeName<int64_t>() const {
     return "integer";
 }
 
-template <> inline const char *ConfigFile::getTypeName<double>() {
+template <> inline const char *ConfigFile::getTypeName<double>() const {
     return "double";
 }
 
-template <> inline const char *ConfigFile::getTypeName<string>() {
+template <> inline const char *ConfigFile::getTypeName<string>() const {
     return "string";
 }
 
-template <> inline const char *ConfigFile::getTypeName<ConfigFile::string_list>() {
+template <> inline const char *ConfigFile::getTypeName<ConfigFile::string_list>() const {
     return "lua_list with only string values";
 }
 
-template <> inline const char *ConfigFile::getTypeName<ConfigFile::integer_list>() {
+template <> inline const char *ConfigFile::getTypeName<ConfigFile::integer_list>() const {
     return "lua_list with only integer values";
 }
 
-template <> inline const char *ConfigFile::getTypeName<ConfigFile::_key_list>() {
+template <> inline const char *ConfigFile::getTypeName<ConfigFile::_key_list>() const {
     return "lua_table with only string keys";
 }
 
-template <> inline const char *ConfigFile::getTypeName<ConfigFile::_list_size>() {
+template <> inline const char *ConfigFile::getTypeName<ConfigFile::_list_size>() const {
     return "lua_table";
 }
 
-template <> inline bool ConfigFile::getLuaValue(bool *res, const bool &def, int index) {
+template <> inline bool ConfigFile::getLuaValue(bool *res, const bool &def, int index) const {
     bool ok = lua_isboolean(m_luaState, index);
     *res = ok ? lua_toboolean(m_luaState, index) : def;
     return ok;
 }
 
-template <> inline bool ConfigFile::getLuaValue(int64_t *res, const int64_t &def, int index) {
+template <> inline bool ConfigFile::getLuaValue(int64_t *res, const int64_t &def, int index) const {
     bool ok = lua_isnumber(m_luaState, index);
     *res = ok ? lua_tointeger(m_luaState, index) : def;
     return ok;
 }
 
-template <> inline bool ConfigFile::getLuaValue(double *res, const double &def, int index) {
+template <> inline bool ConfigFile::getLuaValue(double *res, const double &def, int index) const {
     bool ok = lua_isnumber(m_luaState, index);
     *res = ok ? lua_tonumber(m_luaState, index) : def;
     return ok;
 }
 
-template <> inline bool ConfigFile::getLuaValue(string *res, const string &def, int index) {
+template <> inline bool ConfigFile::getLuaValue(string *res, const string &def, int index) const {
     bool ok = lua_isstring(m_luaState, index);
     *res = ok ? lua_tostring(m_luaState, index) : def;
     return ok;
 }
 
-template <> inline bool ConfigFile::getLuaValue(string_list *res, const string_list &def, int index) {
+template <> inline bool ConfigFile::getLuaValue(string_list *res, const string_list &def, int index) const {
     bool ok = lua_istable(m_luaState, index);
     if (!ok) {
         *res = def;
@@ -154,7 +154,7 @@ template <> inline bool ConfigFile::getLuaValue(string_list *res, const string_l
     return true;
 }
 
-template <> inline bool ConfigFile::getLuaValue(integer_list *res, const integer_list &def, int index) {
+template <> inline bool ConfigFile::getLuaValue(integer_list *res, const integer_list &def, int index) const {
     bool ok = lua_istable(m_luaState, index);
     if (!ok) {
         *res = def;
@@ -181,7 +181,7 @@ template <> inline bool ConfigFile::getLuaValue(integer_list *res, const integer
     return true;
 }
 
-template <> inline bool ConfigFile::getLuaValue(_list_size *res, const _list_size &def, int index) {
+template <> inline bool ConfigFile::getLuaValue(_list_size *res, const _list_size &def, int index) const {
     bool ok = lua_istable(m_luaState, index);
     if (!ok) {
         *res = def;
@@ -203,7 +203,7 @@ template <> inline bool ConfigFile::getLuaValue(_list_size *res, const _list_siz
     return true;
 }
 
-template <> inline bool ConfigFile::getLuaValue(_key_list *res, const _key_list &def, int index) {
+template <> inline bool ConfigFile::getLuaValue(_key_list *res, const _key_list &def, int index) const {
     bool ok = lua_istable(m_luaState, index);
     if (!ok) {
         *res = def;
@@ -230,7 +230,7 @@ template <> inline bool ConfigFile::getLuaValue(_key_list *res, const _key_list 
     return true;
 }
 
-template <typename T> inline T ConfigFile::getValueT(const std::string &name, const T &def, bool *ok) {
+template <typename T> inline T ConfigFile::getValueT(const std::string &name, const T &def, bool *ok) const {
     assert(name.size() != 0);
     string expr = "return " + name;
 
@@ -259,36 +259,36 @@ template <typename T> inline T ConfigFile::getValueT(const std::string &name, co
     return res;
 }
 
-bool ConfigFile::getBool(const string &name, bool def, bool *ok) {
+bool ConfigFile::getBool(const string &name, bool def, bool *ok) const {
     return getValueT(name, def, ok);
 }
 
-int64_t ConfigFile::getInt(const string &name, int64_t def, bool *ok) {
+int64_t ConfigFile::getInt(const string &name, int64_t def, bool *ok) const {
     return getValueT(name, def, ok);
 }
 
-double ConfigFile::getDouble(const string &name, double def, bool *ok) {
+double ConfigFile::getDouble(const string &name, double def, bool *ok) const {
     return getValueT(name, def, ok);
 }
 
-string ConfigFile::getString(const string &name, const string &def, bool *ok) {
+string ConfigFile::getString(const string &name, const string &def, bool *ok) const {
     return getValueT(name, def, ok);
 }
 
-ConfigFile::string_list ConfigFile::getStringList(const std::string &name, const string_list &def, bool *ok) {
+ConfigFile::string_list ConfigFile::getStringList(const std::string &name, const string_list &def, bool *ok) const {
     return getValueT(name, def, ok);
 }
 
-ConfigFile::integer_list ConfigFile::getIntegerList(const std::string &name, const integer_list &def, bool *ok) {
+ConfigFile::integer_list ConfigFile::getIntegerList(const std::string &name, const integer_list &def, bool *ok) const {
     return getValueT(name, def, ok);
 }
 
-int ConfigFile::getListSize(const std::string &name, bool *ok) {
+int ConfigFile::getListSize(const std::string &name, bool *ok) const {
     static const _list_size l = {0};
     return getValueT(name, l, ok).size;
 }
 
-ConfigFile::string_list ConfigFile::getListKeys(const std::string &name, bool *ok) {
+ConfigFile::string_list ConfigFile::getListKeys(const std::string &name, bool *ok) const {
     static const _key_list l = {std::vector<std::string>(0)};
     return getValueT(name, l, ok).keys;
 }
@@ -312,7 +312,7 @@ bool ConfigFile::setBool(const string &name, bool value) {
     return true;
 }
 
-bool ConfigFile::hasKey(const std::string &name) {
+bool ConfigFile::hasKey(const std::string &name) const {
     assert(name.size() != 0);
     string expr = "return " + name;
 
@@ -325,7 +325,7 @@ bool ConfigFile::hasKey(const std::string &name) {
     return ok;
 }
 
-void ConfigFile::invokeLuaCommand(const char *cmd) {
+void ConfigFile::invokeLuaCommand(const char *cmd) const {
     if (luaL_dostring(m_luaState, cmd)) {
         luaWarning("Could not run '%s':\n    %s\n", cmd, lua_tostring(m_luaState, -1));
         // lua_pop(m_luaState, 1);
@@ -345,7 +345,8 @@ bool ConfigFile::isFunctionDefined(const std::string &name) const {
 }
 
 ///////////////////////////////////////////////////////
-void ConfigFile::luaError(const char *fmt, ...) {
+//
+void ConfigFile::luaError(const char *fmt, ...) const {
     va_list v;
     va_start(v, fmt);
 
@@ -361,7 +362,7 @@ void ConfigFile::luaError(const char *fmt, ...) {
     exit(1);
 }
 
-void ConfigFile::luaWarning(const char *fmt, ...) {
+void ConfigFile::luaWarning(const char *fmt, ...) const {
     va_list v;
     va_start(v, fmt);
 
