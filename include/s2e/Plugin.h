@@ -43,7 +43,7 @@ public:
     virtual ~Plugin() {
     }
 
-    LogLevel getLogLevel() {
+    LogLevel getLogLevel() const {
         return m_logLevel;
     }
 
@@ -51,6 +51,7 @@ public:
     S2E *s2e() {
         return m_s2e;
     }
+
     const S2E *s2e() const {
         return m_s2e;
     }
