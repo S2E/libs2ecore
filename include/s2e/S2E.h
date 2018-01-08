@@ -47,6 +47,12 @@ class S2EExecutionState;
 
 class Database;
 
+#ifdef S2E_PYTHON_PLUGINS
+namespace python {
+class Interpreter;
+}
+#endif
+
 // Structure used for synchronization among multiple instances of S2E
 struct S2EShared {
     unsigned currentProcessCount;
@@ -104,6 +110,10 @@ protected:
 
     S2EHandler *m_s2eHandler;
     S2EExecutor *m_s2eExecutor;
+
+#ifdef S2E_PYTHON_PLUGINS
+    python::Interpreter *m_pythonInterpreter;
+#endif
 
     /* forked indicates whether the current S2E process was forked from a parent S2E process */
     void initOutputDirectory(const std::string &outputDirectory, int verbose, bool forked);
@@ -239,6 +249,12 @@ public:
     inline uint64_t getStartTime() const {
         return m_startTimeSeconds;
     }
+
+#ifdef S2E_PYTHON_PLUGINS
+    python::Interpreter *getPythonInterpreter() const {
+        return m_pythonInterpreter;
+    }
+#endif
 };
 
 template <class PluginClass> PluginClass *S2E::getPlugin() const {

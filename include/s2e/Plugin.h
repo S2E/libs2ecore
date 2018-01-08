@@ -161,7 +161,7 @@ public:
     const std::vector<const PluginInfo *> &getPluginInfoList() const;
     const PluginInfo *getPluginInfo(const std::string &name) const;
 
-    Plugin *createPlugin(S2E *s2e, const std::string &name) const;
+    Plugin *createPlugin(S2E *s2e, const std::string &name);
 };
 
 class CompiledPlugin {

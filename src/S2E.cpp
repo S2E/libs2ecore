@@ -19,6 +19,10 @@
 #include <s2e/S2EExecutor.h>
 #include <s2e/Utils.h>
 
+#ifdef S2E_PYTHON_PLUGINS
+#include <s2e/Python/Interpreter.h>
+#endif
+
 #include <llvm/Config/config.h>
 #include <llvm/Support/CommandLine.h>
 #include <llvm/Support/FileSystem.h>
@@ -141,7 +145,13 @@ bool S2E::initialize(int argc, char **argv, TCGLLVMContext *tcgLLVMContext, cons
     /* Initialize S2EExecutor */
     initExecutor();
 
+    /* Initialize logging */
     initLogging();
+
+#ifdef S2E_PYTHON_PLUGINS
+    /* Initialize the Python interpreter */
+    m_pythonInterpreter = new python::Interpreter(m_configFile);
+#endif
 
     /* Load and initialize plugins */
     initPlugins();
@@ -198,6 +208,10 @@ S2E::~S2E() {
     delete m_s2eHandler;
 
     delete m_configFile;
+
+#ifdef S2E_PYTHON_PLUGINS
+    delete m_pythonInterpreter;
+#endif
 
     delete m_warningStream;
     delete m_infoStream;

@@ -28,6 +28,9 @@ find_package(PkgConfig REQUIRED)
 pkg_check_modules(GLIB_PKG glib-2.0)
 include_directories(${GLIB_PKG_INCLUDE_DIRS})
 
+##### Python plugins #####
+option(PYTHON_PLUGINS "Enable Python plugins")
+
 ##### LLVM #####
 find_package(LLVM REQUIRED)
 message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
@@ -59,6 +62,11 @@ message(STATUS "Found libtcg ${LIBTCG_PACKAGE_VERSION}")
 find_package(FSIGCXX REQUIRED)
 message(STATUS "Found fsigc++ ${FSIGCXX_PACKAGE_VERSION}")
 
+if(PYTHON_PLUGINS)
+    find_package(PythonLibs 2.7 REQUIRED)
+    message(STATUS "Found python ${PYTHONLIBS_VERSION_STRING}")
+endif(PYTHON_PLUGINS)
+
 # TODO: proper package cfg for KLEE
 # find_package(KLEE REQUIRED)
 # message(STATUS "Found klee ${KLEE_PACKAGE_VERSION}")
@@ -72,5 +80,9 @@ include_directories(${GLIB_PKG_INCLUDE_DIRS}
                     ${KLEE_DIR}/include
                     ${LUA_DIR}
                     ${S2EGUEST_INCLUDE_DIR})
+
+if(PYTHON_PLUGINS)
+    include_directories(${PYTHON_INCLUDE_DIRS})
+endif(PYTHON_PLUGINS)
 
 add_subdirectory(src)

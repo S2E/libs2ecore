@@ -16,6 +16,11 @@
 #include <s2e/S2E.h>
 #include <s2e/Utils.h>
 
+#ifdef S2E_PYTHON_PLUGINS
+#include <s2e/Python/Interpreter.h>
+#include <s2e/Python/Plugin.h>
+#endif
+
 using namespace boost;
 using namespace std;
 
@@ -49,25 +54,27 @@ bool PluginManager::initialize(S2E *_s2e, ConfigFile *cfg) {
     vector<string> pluginNames = cfg->getStringList("plugins");
 
     /* Check and load plugins */
-    foreach2 (it, pluginNames.begin(), pluginNames.end()) {
-        const string &pluginName = *it;
+    for (auto const &pluginName : pluginNames) {
         const PluginInfo *pluginInfo = m_pluginsFactory->getPluginInfo(pluginName);
-        if (!pluginInfo) {
-            std::cerr << "ERROR: plugin '" << pluginName << "' does not exist in this S2E installation" << '\n';
+
+        if (pluginInfo && getPlugin(pluginInfo->name)) {
+            std::cerr << "ERROR: plugin '" << pluginInfo->name
+                      << "' was already loaded (is it enabled multiple times?)\n";
+
             return false;
-        } else if (getPlugin(pluginInfo->name)) {
-            std::cerr << "ERROR: plugin '" << pluginInfo->name << "' was already loaded "
-                      << "(is it enabled multiple times ?)" << '\n';
-            return false;
-        } else if (!pluginInfo->functionName.empty() && getPlugin(pluginInfo->functionName)) {
+        } else if (pluginInfo && !pluginInfo->functionName.empty() && getPlugin(pluginInfo->functionName)) {
             std::cerr << "ERROR: plugin '" << pluginInfo->name << "' with function '" << pluginInfo->functionName
-                      << "' can not be loaded because" << '\n'
+                      << "' cannot be loaded because\n"
                       << "    this function is already provided by '"
-                      << getPlugin(pluginInfo->functionName)->getPluginInfo()->name << "' plugin" << '\n';
+                      << getPlugin(pluginInfo->functionName)->getPluginInfo()->name << "' plugin\n";
+
             return false;
         } else {
             Plugin *plugin = m_pluginsFactory->createPlugin(_s2e, pluginName);
-            assert(plugin);
+
+            if (!plugin) {
+                return false;
+            }
 
             m_activePluginsList.push_back(plugin);
             m_activePluginsMap.insert(make_pair(plugin->getPluginInfo()->name, plugin));
@@ -116,12 +123,21 @@ bool PluginManager::initialize(S2E *_s2e, ConfigFile *cfg) {
     std::deque<PluginGraph::vertex_descriptor> topo_order;
     boost::topological_sort(g.graph(), std::front_inserter(topo_order));
 
-    foreach2 (it, topo_order.begin(), topo_order.end()) {
-        const PluginInfo *info = g.graph()[(*it)].info;
+    for (auto const &node : topo_order) {
+        const PluginInfo *info = g.graph()[node].info;
         Plugin *p = getPlugin(info->name);
         _s2e->getInfoStream() << "Initializing " << info->name << "\n";
         p->configureLogLevel();
+#ifdef S2E_PYTHON_PLUGINS
+        // XXX Is there a nicer way to call a Python plugin's initialize method?
+        if (dynamic_cast<python::PythonPlugin *>(p)) {
+            _s2e->getPythonInterpreter()->initializePlugin(info->name);
+        } else {
+            p->initialize();
+        }
+#else
         p->initialize();
+#endif
     }
 
     return true;
