@@ -264,7 +264,8 @@ public:
     klee::ref<klee::Expr> createSymbolicValue(const std::string &name = std::string(),
                                               klee::Expr::Width width = klee::Expr::Int32);
 
-    std::vector<klee::ref<klee::Expr>> createSymbolicArray(const std::string &name = std::string(), unsigned size = 4,
+    std::vector<klee::ref<klee::Expr>> createSymbolicArray(const std::string &name = std::string(),
+                                                           uintptr_t address = 0, unsigned size = 4,
                                                            std::string *varName = NULL);
 
     /** Create a symbolic value tied to an example concrete value */
@@ -288,7 +289,7 @@ public:
         return createConcolicValue(name, sizeof(T) * 8, concolicValue);
     }
 
-    std::vector<klee::ref<klee::Expr>> createConcolicArray(const std::string &name, unsigned size,
+    std::vector<klee::ref<klee::Expr>> createConcolicArray(const std::string &name, uintptr_t address, unsigned size,
                                                            const std::vector<unsigned char> &concreteBuffer,
                                                            std::string *varName = NULL);
 
