@@ -311,7 +311,7 @@ ref<Expr> S2EExecutionState::createSymbolicValue(const std::string &name, Expr::
     return createConcolicValue(name, width, concreteValues);
 }
 
-std::vector<ref<Expr>> S2EExecutionState::createConcolicArray(const std::string &name, unsigned size,
+std::vector<ref<Expr>> S2EExecutionState::createConcolicArray(const std::string &name, uintptr_t address, unsigned size,
                                                               const std::vector<unsigned char> &concreteBuffer,
                                                               std::string *varName) {
     assert(concreteBuffer.size() == size || concreteBuffer.size() == 0);
@@ -336,7 +336,7 @@ std::vector<ref<Expr>> S2EExecutionState::createConcolicArray(const std::string 
     // Add it to the set of symbolic expressions, to be able to generate
     // test cases later.
     // Dummy memory object
-    MemoryObject *mo = new MemoryObject(0, size, false, false, false, NULL);
+    MemoryObject *mo = new MemoryObject(address, size, false, false, false, NULL);
     mo->setName(sname);
 
     symbolics.push_back(std::make_pair(mo, array));
@@ -362,7 +362,7 @@ std::vector<ref<Expr>> S2EExecutionState::createConcolicArray(const std::string 
     return result;
 }
 
-std::vector<ref<Expr>> S2EExecutionState::createSymbolicArray(const std::string &name, unsigned size,
+std::vector<ref<Expr>> S2EExecutionState::createSymbolicArray(const std::string &name, uintptr_t address, unsigned size,
                                                               std::string *varName) {
     std::vector<unsigned char> concreteBuffer;
 
@@ -372,7 +372,7 @@ std::vector<ref<Expr>> S2EExecutionState::createSymbolicArray(const std::string 
         }
     }
 
-    return createConcolicArray(name, size, concreteBuffer, varName);
+    return createConcolicArray(name, address, size, concreteBuffer, varName);
 }
 
 /*
@@ -518,9 +518,9 @@ void S2EExecutionState::makeSymbolic(std::vector<ref<Expr>> &args, bool makeConc
         for (unsigned i = 0; i < sizeInBytes; ++i) {
             concreteData.push_back(cast<klee::ConstantExpr>(existingData[i])->getZExtValue(8));
         }
-        symb = createConcolicArray(labelStr, sizeInBytes, concreteData);
+        symb = createConcolicArray(labelStr, kleeAddress->getZExtValue(), sizeInBytes, concreteData);
     } else {
-        symb = createSymbolicArray(labelStr, sizeInBytes);
+        symb = createSymbolicArray(labelStr, kleeAddress->getZExtValue(), sizeInBytes);
     }
 
     kleeWriteMemory(kleeAddress, symb);
