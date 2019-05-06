@@ -327,4 +327,4 @@ bool S2EExecutionStateTlb::audit() {
 
     return true;
 }
-}
+} // namespace s2e

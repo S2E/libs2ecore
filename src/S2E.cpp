@@ -19,7 +19,7 @@
 #include <s2e/S2EExecutor.h>
 #include <s2e/Utils.h>
 
-#include <llvm/Config/config.h>
+#include <llvm/Support/Chrono.h>
 #include <llvm/Support/CommandLine.h>
 #include <llvm/Support/FileSystem.h>
 #include <llvm/Support/Path.h>
@@ -27,7 +27,8 @@
 #include <llvm/Support/raw_ostream.h>
 #include <s2e/s2e_libcpu.h>
 
-#include <llvm/Bitcode/ReaderWriter.h>
+#include <llvm/Bitcode/BitcodeReader.h>
+#include <llvm/Bitcode/BitcodeWriter.h>
 #include <llvm/ExecutionEngine/ExecutionEngine.h>
 #include <llvm/IR/Module.h>
 
@@ -91,7 +92,7 @@ bool S2E::initialize(int argc, char **argv, TCGLLVMContext *tcgLLVMContext, cons
     }
 #endif
 
-    m_startTimeSeconds = llvm::sys::TimeValue::now().seconds();
+    m_startTime = std::chrono::system_clock::now();
 
     // We are the master process of our group
     setpgid(0, 0);
@@ -160,15 +161,14 @@ bool S2E::backupConfigFiles(const std::string &configFileName) {
 
     for (llvm::sys::fs::directory_iterator i(configFileDir, error), e; i != e; i.increment(error)) {
         std::string entry = i->path();
-        llvm::sys::fs::file_status status;
-        error = i->status(status);
+        auto res = i->status();
 
-        if (error) {
-            getWarningsStream() << "Error when querying " << entry << " - " << error.message() << '\n';
+        if (res.getError()) {
+            getWarningsStream() << "Error when querying " << entry << " - " << res.getError().message() << '\n';
             continue;
         }
 
-        if (status.type() != llvm::sys::fs::file_type::regular_file) {
+        if (res->type() != llvm::sys::fs::file_type::regular_file) {
             continue;
         }
 
@@ -200,10 +200,10 @@ void S2E::writeBitCodeToFile() {
     std::error_code error;
     llvm::raw_fd_ostream o(fileName, error, llvm::sys::fs::F_None);
 
-    llvm::Module *module = m_tcgLLVMContext->getModule();
+    auto &modules = m_tcgLLVMContext->getModules();
 
     // Output the bitcode file to stdout
-    llvm::WriteBitcodeToFile(module, o);
+    llvm::WriteBitcodeToFile(*modules[0].get(), o);
 }
 
 S2E::~S2E() {
@@ -479,8 +479,9 @@ llvm::raw_ostream &S2E::getStream(llvm::raw_ostream &stream, const S2EExecutionS
     stream.flush();
 
     if (state) {
-        llvm::sys::TimeValue curTime = llvm::sys::TimeValue::now();
-        stream << (curTime.seconds() - m_startTimeSeconds) << ' ';
+        auto now = std::chrono::system_clock::now();
+        auto diff = now - m_startTime;
+        stream << diff.count() << ' ';
 
         if (m_maxInstances > 1) {
             stream << "[Node " << m_currentInstanceId << "/" << m_currentInstanceIndex << " - State " << state->getID()

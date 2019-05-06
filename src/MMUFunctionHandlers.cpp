@@ -405,14 +405,21 @@ void S2EExecutor::handle_ldst_kernel(Executor *executor, ExecutionState *state, 
 S2EExecutor::HandlerInfo S2EExecutor::s_handlerInfo[] = {
 #define add(name, handler) \
     { name, &S2EExecutor::handler }
-    add("__ldb_mmu", handle_ldb_mmu), add("__ldw_mmu", handle_ldw_mmu), add("__ldl_mmu", handle_ldl_mmu),
-    add("__stb_mmu", handle_stb_mmu), add("__stw_mmu", handle_stw_mmu), add("__stl_mmu", handle_stl_mmu),
-    add("lduw_kernel", handle_lduw_kernel), add("ldl_kernel", handle_ldl_kernel),
+    add("__ldb_mmu", handle_ldb_mmu),
+    add("__ldw_mmu", handle_ldw_mmu),
+    add("__ldl_mmu", handle_ldl_mmu),
+    add("__stb_mmu", handle_stb_mmu),
+    add("__stw_mmu", handle_stw_mmu),
+    add("__stl_mmu", handle_stl_mmu),
+    add("lduw_kernel", handle_lduw_kernel),
+    add("ldl_kernel", handle_ldl_kernel),
     // add("stb_kernel", handle_stb_kernel),
     add("stl_kernel", handle_stl_kernel),
 
 #ifdef TARGET_X86_64
-    add("__stq_mmu", handle_stq_mmu), add("__ldq_mmu", handle_ldq_mmu), add("ldq_kernel", handle_ldq_kernel),
+    add("__stq_mmu", handle_stq_mmu),
+    add("__ldq_mmu", handle_ldq_mmu),
+    add("ldq_kernel", handle_ldq_kernel),
     add("stq_kernel", handle_stq_kernel),
 #endif /* TARGET_X86_64 */
 
@@ -432,7 +439,8 @@ void S2EExecutor::replaceExternalFunctionsWithSpecialHandlers() {
 }
 
 static const char *s_disabledHelpers[] = {
-    "helper_load_seg", "helper_iret_protected",
+    "helper_load_seg",
+    "helper_iret_protected",
 };
 
 void S2EExecutor::disableConcreteLLVMHelpers() {
@@ -444,4 +452,4 @@ void S2EExecutor::disableConcreteLLVMHelpers() {
         kmodule->removeFunction(f, true);
     }
 }
-}
+} // namespace s2e

@@ -132,7 +132,9 @@ struct PluginInfo {
 
 // typedef std::tr1::unordered_map<std::string, const PluginInfo*> PluginMap;
 
-typedef struct PluginGraphData { const PluginInfo *info; } PluginGraphData;
+typedef struct PluginGraphData {
+    const PluginInfo *info;
+} PluginGraphData;
 
 class PluginsFactory {
 private:
@@ -195,11 +197,14 @@ private:
 #define S2E_DEFINE_PLUGIN(className, description, functionName, ...)                                        \
     const char className::s_pluginDeps[][64] = {__VA_ARGS__};                                               \
     const PluginInfo className::s_pluginInfo = {                                                            \
-        #className, description, functionName,                                                              \
+        #className,                                                                                         \
+        description,                                                                                        \
+        functionName,                                                                                       \
         std::vector<std::string>(className::s_pluginDeps,                                                   \
                                  className::s_pluginDeps +                                                  \
                                      sizeof(className::s_pluginDeps) / sizeof(className::s_pluginDeps[0])), \
-        "pluginsConfig['" #className "']", _pluginCreatorHelper<className>};                                \
+        "pluginsConfig['" #className "']",                                                                  \
+        _pluginCreatorHelper<className>};                                                                   \
     static CompiledPlugin s_##className(className::getPluginInfoStatic())
 
 template <class C> Plugin *_pluginCreatorHelper(S2E *s2e) {

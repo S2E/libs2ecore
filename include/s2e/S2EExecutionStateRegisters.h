@@ -319,6 +319,6 @@ public:
     ///
     void setPc(uint64_t pc);
 };
-}
+} // namespace s2e
 
 #endif

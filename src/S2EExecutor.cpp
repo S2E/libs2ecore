@@ -37,7 +37,6 @@
 #include <llvm/Support/DynamicLibrary.h>
 #include <llvm/Support/Process.h>
 
-#include <llvm/Config/config.h>
 #include <llvm/Support/FileSystem.h>
 #include <llvm/Support/Path.h>
 
@@ -53,8 +52,6 @@
 #include <klee/TimerStatIncrementer.h>
 #include <klee/UserSearcher.h>
 #include <klee/util/ExprTemplates.h>
-
-#include <llvm/Support/TimeValue.h>
 
 #include <glib.h>
 #include <sstream>
@@ -927,16 +924,16 @@ S2EExecutor::S2EExecutor(S2E *s2e, TCGLLVMContext *tcgLLVMContext, const Interpr
     }
 
     /* This catches obvious LLVM misconfigurations */
-    Module *M = m_tcgLLVMContext->getModule();
+    Module *M = m_tcgLLVMContext->getModules()[0].get();
 
     DataLayout TD(M);
     assert(M->getDataLayout().getPointerSizeInBits() == 64 &&
            "Something is broken in your LLVM build: LLVM thinks pointers are 32-bits!");
 
-    s2e->getDebugStream() << "Current data layout: " << m_tcgLLVMContext->getModule()->getDataLayoutStr() << '\n';
-    s2e->getDebugStream() << "Current target triple: " << m_tcgLLVMContext->getModule()->getTargetTriple() << '\n';
+    s2e->getDebugStream() << "Current data layout: " << M->getDataLayoutStr() << '\n';
+    s2e->getDebugStream() << "Current target triple: " << M->getTargetTriple() << '\n';
 
-    setModule(m_tcgLLVMContext->getModule(), MOpts, false);
+    setModule(m_tcgLLVMContext->getModules(), MOpts, false);
 
     if (UseFastHelpers && !persistentCacheEnabled) {
         disableConcreteLLVMHelpers();
@@ -949,14 +946,12 @@ S2EExecutor::S2EExecutor(S2E *s2e, TCGLLVMContext *tcgLLVMContext, const Interpr
             IntegerType::get(ctx, TCG_TARGET_REG_BITS),
             ArrayRef<Type *>(vector<Type *>(1, PointerType::get(IntegerType::get(ctx, 64), 0))), false);
 
-        Function *tbFunction = Function::Create(tbFunctionTy, Function::PrivateLinkage, "s2e_dummyTbFunction",
-                                                m_tcgLLVMContext->getModule());
+        Function *tbFunction = Function::Create(tbFunctionTy, Function::PrivateLinkage, "s2e_dummyTbFunction", M);
 
         /* Create dummy main function containing just two instructions:
            a call to TB function and ret */
-        Function *dummyMain =
-            Function::Create(FunctionType::get(Type::getVoidTy(ctx), false), Function::ExternalLinkage,
-                             "s2e_dummyMainFunction", m_tcgLLVMContext->getModule());
+        Function *dummyMain = Function::Create(FunctionType::get(Type::getVoidTy(ctx), false),
+                                               Function::ExternalLinkage, "s2e_dummyMainFunction", M);
 
         BasicBlock *dummyMainBB = BasicBlock::Create(ctx, "entry", dummyMain);
 
@@ -1011,7 +1006,7 @@ S2EExecutor::S2EExecutor(S2E *s2e, TCGLLVMContext *tcgLLVMContext, const Interpr
 
     FunctionType *traceInstTy = FunctionType::get(Type::getVoidTy(M->getContext()), false);
     function =
-        dynamic_cast<Function *>(kmodule->module->getOrInsertFunction("tcg_llvm_trace_instruction", traceInstTy));
+        llvm::dyn_cast<Function>(kmodule->module->getOrInsertFunction("tcg_llvm_trace_instruction", traceInstTy));
     assert(function);
     addSpecialFunctionHandler(function, handlerTraceInstruction);
 
@@ -1689,8 +1684,8 @@ inline bool S2EExecutor::executeInstructions(S2EExecutionState *state, unsigned 
             KInstruction *ki = state->pc;
 
             if (PrintLLVMInstructions) {
-                m_s2e->getDebugStream(state) << "executing " << ki->inst->getParent()->getParent()->getName().str()
-                                             << ": " << *ki->inst << '\n';
+                m_s2e->getDebugStream(state)
+                    << "executing " << ki->inst->getParent()->getParent()->getName().str() << ": " << *ki->inst << '\n';
             }
 
             stepInstruction(*state);

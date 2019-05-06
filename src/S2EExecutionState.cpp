@@ -279,8 +279,8 @@ ref<Expr> S2EExecutionState::createConcolicValue(const std::string &name, Expr::
         if (ConcolicMode) {
             concolics->add(array, buffer);
         } else {
-            g_s2e->getWarningsStream(this) << "Concolic mode disabled: ignoring concrete assignments for " << name
-                                           << '\n';
+            g_s2e->getWarningsStream(this)
+                << "Concolic mode disabled: ignoring concrete assignments for " << name << '\n';
         }
     }
 
@@ -351,8 +351,8 @@ std::vector<ref<Expr>> S2EExecutionState::createConcolicArray(const std::string 
         if (ConcolicMode) {
             concolics->add(array, concreteBuffer);
         } else {
-            g_s2e->getWarningsStream(this) << "Concolic mode disabled: ignoring concrete assignments for " << name
-                                           << '\n';
+            g_s2e->getWarningsStream(this)
+                << "Concolic mode disabled: ignoring concrete assignments for " << name << '\n';
         }
     }
 
@@ -398,11 +398,11 @@ std::vector<ref<Expr>> S2EExecutionState::createSymbolicArray(const std::string 
  */
 void S2EExecutionState::kleeReadMemory(ref<Expr> kleeAddressExpr, uint64_t sizeInBytes, std::vector<ref<Expr>> *result,
                                        bool requireConcrete, bool concretize, bool addConstraint) {
-    ObjectPair op;
     kleeAddressExpr = g_s2e->getExecutor()->toUnique(*this, kleeAddressExpr);
     ref<klee::ConstantExpr> address = cast<klee::ConstantExpr>(kleeAddressExpr);
 
 #ifdef CONFIG_SYMBEX_MP
+    ObjectPair op;
     if (!addressSpace.resolveOne(address, op))
         assert(0 && "kleeReadMemory: out of bounds / multiple resolution unhandled");
 
@@ -465,10 +465,10 @@ void S2EExecutionState::kleeReadMemory(ref<Expr> kleeAddressExpr, uint64_t sizeI
  */
 void S2EExecutionState::kleeWriteMemory(ref<Expr> kleeAddressExpr, /* Address */
                                         std::vector<ref<Expr>> &bytes) {
-    ObjectPair op;
     kleeAddressExpr = g_s2e->getExecutor()->toUnique(*this, kleeAddressExpr);
     ref<klee::ConstantExpr> address = cast<klee::ConstantExpr>(kleeAddressExpr);
 #ifdef CONFIG_SYMBEX_MP
+    ObjectPair op;
     if (!addressSpace.resolveOne(address, op))
         assert(0 && "kleeReadMemory: out of bounds / multiple resolution unhandled");
 

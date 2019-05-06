@@ -66,4 +66,4 @@ klee::ObjectState *AddressSpaceCache::notifySplit(const klee::ObjectState *oldOb
 
     return baseObject;
 }
-}
+} // namespace s2e

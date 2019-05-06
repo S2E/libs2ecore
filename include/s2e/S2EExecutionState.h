@@ -387,7 +387,7 @@ public:
                           llvm::raw_ostream &os);
     void dumpQuery(llvm::raw_ostream &os) const;
 };
-}
+} // namespace s2e
 
 extern "C" {
 extern s2e::S2EExecutionState *g_s2e_state;

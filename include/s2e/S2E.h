@@ -12,11 +12,11 @@
 #undef NDEBUG
 
 #include <fstream>
-#include <string>
-#include <vector>
-//#include <tr1/unordered_map>
+#include <llvm/Support/Chrono.h>
 #include <llvm/Support/raw_ostream.h>
 #include <map>
+#include <string>
+#include <vector>
 
 // Undefine cat from "compiler.h"
 #undef cat
@@ -30,7 +30,7 @@
 namespace klee {
 class Interpreter;
 class InterpreterHandler;
-}
+} // namespace klee
 
 struct TCGLLVMContext;
 
@@ -109,7 +109,7 @@ protected:
 
     TCGLLVMContext *m_tcgLLVMContext;
 
-    uint64_t m_startTimeSeconds;
+    llvm::sys::TimePoint<> m_startTime;
 
     /* How many processes can S2E fork */
     unsigned m_maxInstances;
@@ -254,10 +254,6 @@ public:
     unsigned getCurrentInstanceCount();
 
     unsigned getInstanceIndexWithLowestId();
-
-    inline uint64_t getStartTime() const {
-        return m_startTimeSeconds;
-    }
 };
 
 template <class PluginClass> PluginClass *S2E::getPlugin() const {
