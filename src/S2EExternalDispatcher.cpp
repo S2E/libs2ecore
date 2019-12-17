@@ -27,7 +27,7 @@ S2EExternalDispatcher::S2EExternalDispatcher() {
 S2EExternalDispatcher::~S2EExternalDispatcher() {
 }
 
-bool S2EExternalDispatcher::call(external_fcn_t targetFunction, const Arguments &args, uint64_t *result,
+bool S2EExternalDispatcher::call(const std::string& targetName, void* targetAddr, const Arguments &args, uint64_t *result,
                                  std::stringstream &err) {
     bool res;
 
@@ -37,7 +37,7 @@ bool S2EExternalDispatcher::call(external_fcn_t targetFunction, const Arguments 
         restoreJmpBuf();
         throw CpuExitException();
     } else {
-        res = ExternalDispatcher::call(targetFunction, args, result, err);
+        res = ExternalDispatcher::call(targetName, targetAddr, args, result, err);
     }
 
     restoreJmpBuf();

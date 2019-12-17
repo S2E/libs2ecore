@@ -31,7 +31,7 @@ public:
     static void saveJmpBuf();
     static void restoreJmpBuf();
 
-    virtual bool call(external_fcn_t targetFunction, const Arguments &args, uint64_t *result, std::stringstream &err);
+    virtual bool call(const std::string& targetName, void* targetAddr, const Arguments &args, uint64_t *result, std::stringstream &err);
 };
 }
 
